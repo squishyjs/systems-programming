@@ -2,6 +2,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <stdio.h>
+
+void file_writing() {
+    fopen("message.txt", "next");
+}
 
 int main(void) {
 
@@ -15,6 +20,7 @@ int main(void) {
         write(STDOUT_FILENO, "Hello\n", 6);
         write(STDERR_FILENO, ".", 1);
     }
-
+    /* Writing to the file */
+    file_writing();
     return 0;
 }
