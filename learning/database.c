@@ -28,6 +28,9 @@ struct Connection {
 };
 
 void die(const char *message) {
+    //if there's an error, print its error message
+    //*error messages (numbers) are returned by functions
+    //when a problem occurs. i.e. an error return
     if (errno) {
         perror(message);
     } else {
@@ -121,8 +124,10 @@ void set_database(struct Connection *conn, int id,
     char *res = strncpy(addr->name, name, MAX_DATA);
     //demonstrate bug
     if (!res) {
-        die("Email copy failed.");
+        die("Name copy failed.");
     }
+    res = strncpy(addr->email, email, MAX_DATA);
+    if (!res) die("Email copy failed");
 }
 
 void get_database(struct Connection *conn, int id) {

@@ -11,7 +11,7 @@ const char DOWN  = 'S';
 const char RIGHT = 'D';
 const char LEFT  = 'A';
 const char QUIT  = 'Q';
-bool GAME  = true;              //interpolated as '1'
+volatile bool GAME  = true;              //interpolated as '1'
 
 int x_pos = HEIGHT / 2;         //middle position
 int y_pos = (WIDTH / 2) - 1;    //'-1' for offset to centre
@@ -38,22 +38,22 @@ int main(void) {
         char move_buf;
         move_buf = toupper(getchar());
         if (move_buf == UP && x_pos > 0) {
-            printf("You went up!\n");
+            puts("You went up!");
             x_pos--;
         } else if (move_buf == DOWN && x_pos < HEIGHT - 1) {
-            printf("You went down!\n");
+            puts("You went down!");
             x_pos++;
         } else if (move_buf == RIGHT && y_pos < WIDTH - 1) {
-            printf("You went right!\n");
+            puts("You went right!");
             y_pos++;
         } else if (move_buf == LEFT && y_pos > 0) {
-            printf("You went left!\n");
+            puts("You went left!");
             y_pos--;
         } else if (move_buf == QUIT) {
             puts("See you soon!");
             GAME = false;
-        }
-        else {
+            break;
+        } else {
             puts("Please enter a valid move: WASD.\n");
         }
 
