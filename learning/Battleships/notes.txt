@@ -1,0 +1,43 @@
+
+/* Battleships is a guessing game playe on a ruled grid
+ * board in which each player's WARSHIPS are marked 
+ *
+ * Types of Battleships (1990 version):
+ * - Carrier (size 5)
+ * - Battleship (size 4)
+ * - Cruiser (size 3)
+ * - Submarine (size 3)
+ * - Destroyer (size 2)
+ * */
+/* 
+
+Board example:
+
+  1 2 3 4 5 6 7 8 9 10
+A . . . . . . . . . .
+B . . . . . . . . . .
+C . . . . . . . . . .
+D . . . . . . . . . .
+E . . . . . . . . . .
+F . . . . . . . . . .
+G . . . . . . . . . .
+H . . . . . . . . . .
+I . . . . . . . . . .
+J . . . . . . . . . .
+
+*/
+
+-----------------------------------------------------------------------------------------------------------
+
+What I will need:
+
+- Board (represented as a two-dimensional array)
+- A Board Cell (holds information about two things: coordinate on board, and whether it is occupied or not)
+- Battleships (5 types)
+- Battleships will lie on this 2D array
+	- A battleship will contain a segment of cells
+	- Hence a battleship will be a segment
+	- And a segment will represent a row (horizontal or vertical) of cells
+	- Need to gracefully handle missed shots
+	- Battleships will need random position in future (will remain static for now)
+-
