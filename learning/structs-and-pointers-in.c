@@ -15,7 +15,7 @@ struct Person *create_person(char *name, int age, float height, int weight) {
     struct Person *person = malloc(sizeof(struct Person));
     assert(person != NULL);
     //initialise variables of the person
-    person->name = strdup(name); //should be strdup(name)..but why??
+    person->name = strdup(name); //should be strdup(name)..creates copy string for mem safety
     person->age = age;
     person->height = height;
     person->weight = weight;
