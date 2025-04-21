@@ -1,25 +1,57 @@
+#include "dbg.h"
+
+#include <stddef.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define ROWS  10
-#define COLS  10
-#define MISS  'X'
-#define HIT   'O'
+#define ROWS        10
+#define COLS        10
+#define MAX_SIZE    5
+#define MISS        'X'
+#define HIT         'O'
+
+enum BATTLESHIPS {
+    /* Five initial battleships on board */
+    CARRIER=1,
+    BATTLESHIP,
+    CRUISER,
+    SUBMARINE,
+    DESTROYER
+};
+
+const char *ShipTypes[] = {
+     "Carrier", "Battleship", 
+     "Cruiser", "Submarine",
+     "Destroyer"
+};
+
+typedef struct {
+    size_t size;
+} ShipType;
 
 typedef struct {
     int row;
     int col;
-    bool has_ship;   // TRUE -> occupied by ship
-    bool is_hit;     // TRUE -> marked by 'o'
+    bool has_ship;              // TRUE -> occupied by ship
+    bool is_hit;                // TRUE -> marked by 'O'
 } Cell;
 
+typedef struct {
+    /* an array of board Cells (vertical or horizontal) */
+    ShipType segment;
+    char body[];                // dynamically allocated
+} Segment;
+
+//TODO: Implement specific battleship types
 typedef struct Battleship {
     char *ship_name;
-    Cell cell;
-    bool is_sunk;
+    Segment ship_type;
+    bool is_sunk;               // TRUE -> ship_health is dead
+
+    bool (*alive)(struct Battleship *self);   //TRUE -> e.g. ship array segment = [1, 1, 1, 1];
     void (*get_position)(struct Battleship *self);
     void (*get_ship_status)(struct Battleship *self);
 } Battleship;
@@ -34,6 +66,43 @@ struct GridBoard {
     void (*print_board)(struct GridBoard*);
 };
 
+struct Battleship* create_battleship(ShipType battleship_size) {
+    Battleship new_battleship;
+    switch (battleship_size.size) {
+        case CARRIER:
+            new_battleship.is_sunk = false;
+            new_battleship.ship_type.segment.size = 5;
+            new_battleship.ship_name = "CARRIER";
+            break;
+        case BATTLESHIP:
+            new_battleship.is_sunk = false;
+            new_battleship.ship_type.segment.size = 4;
+            new_battleship.ship_name = "BATTLESHIP";
+            break;
+        case CRUISER:
+            new_battleship.is_sunk = false;
+            new_battleship.ship_type.segment.size = 3;
+            new_battleship.ship_name = "CRUISER";
+            break;
+        case SUBMARINE:
+            new_battleship.is_sunk = false;
+            new_battleship.ship_type.segment.size = 3;
+            new_battleship.ship_name = "SUBMARINE";
+            break;
+        case DESTROYER:
+            new_battleship.is_sunk = false;
+            new_battleship.ship_type.segment.size = 2;
+            new_battleship.ship_name = "DESTROYER";
+            break;
+        default:
+            perror("Please enter a VALID ship size: (Carrier = 1, Battleship = 2, Cruiser = 3, Submarine = 4, Destroyer = 5)\n");
+            break;
+    };
+    //TODO: need to malloc some shit
+    //
+    return &new_battleship;
+}
+
 void print_ship_status(Battleship *self) {
     if (self->is_sunk) {
         printf("The %s ship has sunk!\n", self->ship_name);
@@ -42,10 +111,12 @@ void print_ship_status(Battleship *self) {
     }
 }
 
+//TODO: function should use Segment not Cell
 void get_current_ship_position(Battleship *self) {
     printf("The %s ship is at position (%d,%d)\n",
            self->ship_name,
            self->cell.row, self->cell.col);
+
 }
 
 void display_board(struct GridBoard* grid_board) {
@@ -62,7 +133,7 @@ void display_board(struct GridBoard* grid_board) {
     }
     printf("\n");
     //rows (A -> J)
-    for (int i = 0; i < ROWS; i++) {
+    for (int i = 0; i < ROWS; i++) {//
         printf("%c  ", 'A' + i);
         for (int j = 0; j < COLS; j++) {
             char board_coordinate = '.';
@@ -79,14 +150,36 @@ void display_board(struct GridBoard* grid_board) {
     }
 }
 
+//TODO: return a string per se
+char *attack(Cell attack_coordinate) {
+    return "HIT";
+}
+
+void start_game(struct GridBoard game_board) {
+    game_board.print_board = display_board;
+    game_board.print_board(&game_board);
+
+    printf("\n-----------------------------BattleShips-----------------------------\n");
+    printf("Battleshisps is a strategy and guessing-type game that involves..well\n");
+    printf("battleships. A Grid board of 10 x 10 squares is displayed, with rows\n");
+    printf("of A-J, and columns numbered 1-10. In each move, you need to guess\n");
+    printf("where a battleship may be. For instance, picking a coordinate (x, y)\n");
+    printf("may result in either a hit (X) or miss (O). The goal is then to find\n");
+    printf("where all five ships are located, and SINK THEM!. The five ships are:\n\n");
+    printf("                            1. Carrier\n");
+    printf("                            2. Battleship\n");
+    printf("                            3. Cruiser\n");
+    printf("                            4. Submarine\n");
+    printf("                            5. Destroyer\n");
+    printf("\n---------------------------------------------------------------------\n");
+    printf("Are you ready to play the Battleships game? (yes or no): ");
+    
+}
 
 int main(void) {
-    // struct GridBoard board;
-    // board.print_board = &display_board();
-    struct GridBoard board;
-    board.print_board = display_board;
-    
-    board.print_board(&board);
-
+    //create a new board
+    struct GridBoard clean_board;
+    start_game(clean_board);
     return 0;
 }
+
