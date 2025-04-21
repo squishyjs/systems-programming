@@ -1,15 +1,14 @@
 
-/* Battleships is a guessing game playe on a ruled grid
- * board in which each player's WARSHIPS are marked 
- *
- * Types of Battleships (1990 version):
- * - Carrier (size 5)
- * - Battleship (size 4)
- * - Cruiser (size 3)
- * - Submarine (size 3)
- * - Destroyer (size 2)
- * */
-/* 
+Battleships is a guessing game playe on a ruled grid board in which each player's WARSHIPS are marked. Each ship occupies a 
+number of consecutive squares on the grid, arranged either horizontally or vertically. The number of suqares for each ship is determined by the type of ship. The ships CANNOT overlap (i.e., only one ship can occupy any given square in the grid) or be 
+placed diagonally. The game is a discovery game in whic players need to discover the ship's positions.
+
+Types of Battleships (1990 version):
+ - Carrier (size 5)
+ - Battleship (size 4)
+ - Cruiser (size 3)
+ - Submarine (size 3)
+ - Destroyer (size 2)
 
 Board example:
 
@@ -25,14 +24,12 @@ H . . . . . . . . . .
 I . . . . . . . . . .
 J . . . . . . . . . .
 
-*/
-
 -----------------------------------------------------------------------------------------------------------
 
 What I will need:
 
-- Board (represented as a two-dimensional array)
-- A Board Cell (holds information about two things: coordinate on board, and whether it is occupied or not)
+- Board (two-dimensional array)
+- Board Cell Struct (holds information about two things: coordinate on board, and whether it is occupied or not)
 - Battleships (5 types)
 - Battleships will lie on this 2D array
 	- A battleship will contain a segment of cells
