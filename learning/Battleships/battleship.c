@@ -218,6 +218,11 @@ void display_board(struct GridBoard* grid_board) {
         printf("\n");
     }
 }
+//TODO: place ship -> board
+void place_ship(struct GridBoard *game_board, Battleship *ship) {
+    return;
+}
+
 //TODO: return a string per se
 char *attack(Cell attack_coordinate) {
     return "HIT";
