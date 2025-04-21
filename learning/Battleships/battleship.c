@@ -1,5 +1,6 @@
 #include "dbg.h"
 
+#include <stdatomic.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -7,6 +8,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#define FAIL        -1
 #define ROWS        10
 #define COLS        10
 #define MAX_SIZE    5
@@ -22,11 +24,18 @@ enum BATTLESHIPS {
     DESTROYER
 };
 
+const int VALID_COLUMNS[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+const char VALID_ROWS[]   = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
 const char *ShipTypes[] = {
      "Carrier", "Battleship", 
      "Cruiser", "Submarine",
      "Destroyer"
 };
+
+typedef struct Guess {
+    char row;
+    int col;
+} Guess;
 
 typedef struct {
     size_t size;
@@ -99,11 +108,11 @@ struct Battleship* create_battleship(ShipType battleship_size) {
             break;
     };
     //TODO: need to malloc some shit
-    //
+
     return &new_battleship;
 }
 
-void print_ship_status(Battleship *self) {
+void print_hit_status(Battleship *self) {
     if (self->is_sunk) {
         printf("The %s ship has sunk!\n", self->ship_name);
     } else {
@@ -111,14 +120,74 @@ void print_ship_status(Battleship *self) {
     }
 }
 
-//TODO: function should use Segment not Cell
+void print_miss_status() {
+    printf("Shot Missed! Try again.\n");
+}
+
+bool is_valid_guess(char *row_guess, int*col_guess) {
+    check(row_guess != NULL, "Row guess is invalid.\n");
+    check(col_guess != NULL, "Column guess is invalid.\n");
+
+    bool v_row = false, v_col = false;
+    for (int i = 0; i < ROWS; ++i) {
+        if (VALID_ROWS[i] == (*row_guess))
+            v_row = true;
+    }
+    for (int i = 0; i < COLS; ++i) {
+        if (VALID_COLUMNS[i] == (*col_guess))
+            v_col = true;
+    }
+    return (v_row && v_col) ? true : false;
+error:
+    printf("<error print> Invalid guess. Returning 'false'");
+    return false;
+}
+
+bool check_guess(Guess *coordinate) {
+    char  row_guess = coordinate->row;
+    int col_guess = coordinate->col;
+    //TODO: validate guess
+    if (is_valid_guess(&row_guess, &col_guess))
+        return true;
+    return false;
+}
+
+//TODO: refresh board after player (x, y) guess
+void (*update_board_on_guess(struct GridBoard *game_board, Guess *coordinate))() {
+    /* validate player guess */
+    if (!check_guess(coordinate)) {
+        printf("Please enter a valid guess");
+        exit(FAIL);
+    }
+
+    //check coordinate of player guess
+    bool successful_hit = false;
+    int  row_player_guess = coordinate->row;
+    char col_player_guess = coordinate->col;
+    //begin for loop over board
+    for (int i = 0; i < ROWS; ++i) {
+        for (int j = 0; j < COLS; ++j) {
+            if (i == row_player_guess && j == col_player_guess) {
+                //current cell should point to cell in game_board
+                //need to check if some FUNNY BUSINESS IS GOING ON HERE:
+                Cell *current_cell = &game_board->board[i][j];
+                /* check if cell contains a ship segment */
+                if (current_cell->has_ship)
+                    successful_hit = true;
+            }
+        }
+    }
+    return successful_hit ? &print_hit_status : &print_miss_status;
+}
+
+//TODO: function should use Segment ! Cell
 void get_current_ship_position(Battleship *self) {
     printf("The %s ship is at position (%d,%d)\n",
            self->ship_name,
            self->cell.row, self->cell.col);
-
 }
 
+/* TODO: need to split function between initialising the board, and displaying it */
 void display_board(struct GridBoard* grid_board) {
     //initial empty board -> all dots
     for (int i = 0; i < ROWS; i++) {
@@ -149,7 +218,6 @@ void display_board(struct GridBoard* grid_board) {
         printf("\n");
     }
 }
-
 //TODO: return a string per se
 char *attack(Cell attack_coordinate) {
     return "HIT";
