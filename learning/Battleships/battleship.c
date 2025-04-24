@@ -23,6 +23,13 @@ const bool PLAYING      = true;
 const int NO_SHIPS      = 0;
 int ALIVE_SHIPS         = 5;
 
+const int VALID_COLUMNS[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+const char VALID_ROWS[]   = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
+const char *ShipTypes[] = {
+     "Carrier", "Battleship", 
+     "Cruiser", "Submarine",
+     "Destroyer"
+};
 
 enum BATTLESHIPS {
     /* Five initial battleships on board */
@@ -31,14 +38,6 @@ enum BATTLESHIPS {
     CRUISER,
     SUBMARINE,
     DESTROYER
-};
-
-const int VALID_COLUMNS[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-const char VALID_ROWS[]   = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
-const char *ShipTypes[] = {
-     "Carrier", "Battleship", 
-     "Cruiser", "Submarine",
-     "Destroyer"
 };
 
 typedef struct Guess {
@@ -61,7 +60,7 @@ typedef struct {
     /* an array of board Cells (vertical or horizontal) */
     ShipType segment;
     //array of Cell
-    char body[];                // should be dynamically allocated
+    Cell ship_body[];                // should be dynamically allocated
 } Segment;
 
 //TODO: Implement specific battleship types
@@ -85,6 +84,12 @@ struct GridBoard {
     void (*print_board)(struct GridBoard*);
 };
 
+const Cell CARRIER_SEGMENT[5];
+const Cell BATTLEHSIP_SEGMENT[4];
+const Cell CRUISER_SEGMENT[3];
+const Cell SUBMARINE_SEGMENT[3];
+const Cell DESTROYER_SEGMENT[2];
+
 struct Battleship* create_battleship(ShipType battleship_size) {
     /* allocate memory for battleship */
     struct Battleship *new_battleship = malloc(sizeof(struct Battleship));
@@ -93,29 +98,114 @@ struct Battleship* create_battleship(ShipType battleship_size) {
             new_battleship->is_sunk = false;
             new_battleship->ship_type.segment.size = 5;
             new_battleship->ship_name = "CARRIER";
+            /* define ship coordinates -> GridBoard */
+            new_battleship->ship_type.ship_body[0].row = 'B';
+            new_battleship->ship_type.ship_body[0].col = 2;
+            new_battleship->ship_type.ship_body[0].has_ship = true;
+            new_battleship->ship_type.ship_body[0].is_hit = false;
+
+            new_battleship->ship_type.ship_body[1].row = 'C';
+            new_battleship->ship_type.ship_body[1].col = 2;
+            new_battleship->ship_type.ship_body[1].has_ship = true;
+            new_battleship->ship_type.ship_body[1].is_hit = false;
+
+            new_battleship->ship_type.ship_body[2].row = 'D';
+            new_battleship->ship_type.ship_body[2].col = 2;
+            new_battleship->ship_type.ship_body[2].has_ship = true;
+            new_battleship->ship_type.ship_body[2].is_hit = false;
+
+            new_battleship->ship_type.ship_body[3].row = 'E';
+            new_battleship->ship_type.ship_body[3].col = 2;
+            new_battleship->ship_type.ship_body[3].has_ship = true;
+            new_battleship->ship_type.ship_body[3].is_hit = false;
+
+            new_battleship->ship_type.ship_body[4].row = 'F';
+            new_battleship->ship_type.ship_body[4].col = 2;
+            new_battleship->ship_type.ship_body[4].has_ship = true;
+            new_battleship->ship_type.ship_body[4].is_hit = false;
             break;
         case BATTLESHIP:
             new_battleship->is_sunk = false;
             new_battleship->ship_type.segment.size = 4;
             new_battleship->ship_name = "BATTLESHIP";
+
+            new_battleship->ship_type.ship_body[0].row = 'A';
+            new_battleship->ship_type.ship_body[0].col = 6;
+            new_battleship->ship_type.ship_body[0].has_ship = true;
+            new_battleship->ship_type.ship_body[0].is_hit = false;
+
+            new_battleship->ship_type.ship_body[1].row = 'A';
+            new_battleship->ship_type.ship_body[1].col = 7;
+            new_battleship->ship_type.ship_body[1].has_ship = true;
+            new_battleship->ship_type.ship_body[1].is_hit = false;
+
+            new_battleship->ship_type.ship_body[2].row = 'A';
+            new_battleship->ship_type.ship_body[2].col = 8;
+            new_battleship->ship_type.ship_body[2].has_ship = true;
+            new_battleship->ship_type.ship_body[2].is_hit = false;
+
+            new_battleship->ship_type.ship_body[3].row = 'A';
+            new_battleship->ship_type.ship_body[3].col = 9;
+            new_battleship->ship_type.ship_body[3].has_ship = true;
+            new_battleship->ship_type.ship_body[3].is_hit = false;
             break;
         case CRUISER:
             new_battleship->is_sunk = false;
             new_battleship->ship_type.segment.size = 3;
             new_battleship->ship_name = "CRUISER";
+            
+            new_battleship->ship_type.ship_body[0].row = 'G';
+            new_battleship->ship_type.ship_body[0].col = 9;
+            new_battleship->ship_type.ship_body[0].has_ship = true;
+            new_battleship->ship_type.ship_body[0].is_hit = false;
+
+            new_battleship->ship_type.ship_body[1].row = 'H';
+            new_battleship->ship_type.ship_body[1].col = 9;
+            new_battleship->ship_type.ship_body[1].has_ship = true;
+            new_battleship->ship_type.ship_body[1].is_hit = false;
+
+            new_battleship->ship_type.ship_body[2].row = 'I';
+            new_battleship->ship_type.ship_body[2].col = 9;
+            new_battleship->ship_type.ship_body[2].has_ship = true;
+            new_battleship->ship_type.ship_body[2].is_hit = false;
             break;
         case SUBMARINE:
             new_battleship->is_sunk = false;
             new_battleship->ship_type.segment.size = 3;
             new_battleship->ship_name = "SUBMARINE";
+
+            new_battleship->ship_type.ship_body[0].row = 'I';
+            new_battleship->ship_type.ship_body[0].col = 2;
+            new_battleship->ship_type.ship_body[0].has_ship = true;
+            new_battleship->ship_type.ship_body[0].is_hit = false;
+
+            new_battleship->ship_type.ship_body[1].row = 'I';
+            new_battleship->ship_type.ship_body[1].col = 3;
+            new_battleship->ship_type.ship_body[1].has_ship = true;
+            new_battleship->ship_type.ship_body[1].is_hit = false;
+
+            new_battleship->ship_type.ship_body[2].row = 'I';
+            new_battleship->ship_type.ship_body[2].col = 4;
+            new_battleship->ship_type.ship_body[2].has_ship = true;
+            new_battleship->ship_type.ship_body[2].is_hit = false;
             break;
         case DESTROYER:
             new_battleship->is_sunk = false;
             new_battleship->ship_type.segment.size = 2;
             new_battleship->ship_name = "DESTROYER";
+
+            new_battleship->ship_type.ship_body[0].row = 'J';
+            new_battleship->ship_type.ship_body[0].col = 6;
+            new_battleship->ship_type.ship_body[0].has_ship = true;
+            new_battleship->ship_type.ship_body[0].is_hit = false;
+
+            new_battleship->ship_type.ship_body[1].row = 'J';
+            new_battleship->ship_type.ship_body[1].col = 7;
+            new_battleship->ship_type.ship_body[1].has_ship = true;
+            new_battleship->ship_type.ship_body[1].is_hit = false;
             break;
         default:
-            sentinel("Invalid shipy type: %zu. Please enter a VALID ship size: (Carrier = 1, Battleship = 2, Cruiser = 3, Submarine = 4, Destroyer = 5)\n", battleship_size.size);
+            sentinel("Invalid ship type: %zu. Please enter a VALID ship size: (Carrier = 1, Battleship = 2, Cruiser = 3, Submarine = 4, Destroyer = 5)\n", battleship_size.size);
             break;
     };
 
@@ -138,7 +228,7 @@ void print_miss_status() {
     printf("Shot Missed! Try again.\n");
 }
 
-bool is_valid_guess(char *row_guess, int*col_guess) {
+bool check_guess(char *row_guess, int*col_guess) {
     check(row_guess != NULL, "Row guess is invalid.\n");
     check(col_guess != NULL, "Column guess is invalid.\n");
 
@@ -153,15 +243,15 @@ bool is_valid_guess(char *row_guess, int*col_guess) {
     }
     return (v_row && v_col) ? true : false;
 error:
-    printf("<error print> Invalid guess. Returning 'false'");
+    printf("<error print> Invalid coordinate");
     return false;
 }
 
-bool check_guess(Guess *coordinate) {
+bool is_valid_guess(Guess *coordinate) {
     char row_guess = coordinate->row;
     int  col_guess = coordinate->col;
     //TODO: validate guess
-    if (is_valid_guess(&row_guess, &col_guess))
+    if (check_guess(&row_guess, &col_guess) == true)
         return true;
     return false;
 }
@@ -169,7 +259,7 @@ bool check_guess(Guess *coordinate) {
 //TODO: refresh board after player (x, y) guess
 void (*update_board_on_guess(struct GridBoard *game_board, Guess *coordinate))() {
     /* validate player guess */
-    if (!check_guess(coordinate)) {
+    if (!is_valid_guess(coordinate)) {
         printf("Please enter a valid guess");
         exit(FAIL);
     }
@@ -255,7 +345,7 @@ bool play_game_false(char *str) {
 
 void start_game(struct GridBoard game_board) {
     printf("\n-----------------------------BattleShips-----------------------------\n");
-    printf("Battleshisps is a strategy and guessing-type game that involves..well\n");
+    printf("Battleships is a strategy and guessing-type game that involves..well\n");
     printf("battleships. A Grid board of 10 x 10 squares is displayed, with rows\n");
     printf("of A-J, and columns numbered 1-10. In each move, you need to guess\n");
     printf("where a battleship may be. For instance, picking a coordinate (x, y)\n");
@@ -294,28 +384,28 @@ void start_game(struct GridBoard game_board) {
         /* TODO: create the rest of the game */ 
         /* link functions and prompt the user */
         while (ALIVE_SHIPS > NO_SHIPS) {
-            char buf[MAX_DATA];
             /********/
             sleep(1);
             /********/
             printf("There remains %d ships!\n", ALIVE_SHIPS);
 
-            /* TODO: instantiate Guess struct -> replace members witht stdin */
+            /* TODO: replace with Guess struct -> replace members witht stdin */
+            char buf[MAX_DATA];
             printf("Entering coordinate..\n");
             printf("Row: ");
             fgets(buf, sizeof(buf), stdin);
             char row_choice = buf[0];
             row_choice = toupper(row_choice);
             /* sanitize newline */
-            if (row_choice == '\n')
+            if (row_choice == '\n') {
                 row_choice = '\0';
-
+            }
             printf("Column: ");
             fgets(buf, sizeof(buf), stdin);
             /* convert str to int */
             int col_choice = atoi(buf);
             
-            printf("You entered the coordinate: (%c, %d)\n", row_choice, col_choice);
+            printf("You entered %c%d.\n", row_choice, col_choice);
 
             printf("Thanks for playing. Goodbye John!\n"); F;
             break; //temporary!
