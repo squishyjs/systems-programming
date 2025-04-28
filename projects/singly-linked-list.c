@@ -18,24 +18,60 @@ typedef struct Node {
     int data;
 } Node;
 
-void insert_node(Node *head, int value) {
+Node *insert_node(Node *head, int value) {
+    Node *temp = malloc(sizeof(*temp));
+    temp->data = value;
+    temp->next = NULL;
 
+    if (head == NULL) {
+        //if SLL is empty, then have head -> new node
+        head = temp;
+    } else {
+        Node *p = head;
+        while (p->next != NULL) {
+            //traverse list until last node is found
+            p = p->next;
+        }
+        p->next = temp;
+    }
+    return head;
 }
 
-void delete_node(Node *head, Node *target_node) {
-
+Node *delete_node(Node *head, int value) {
+    if (head == NULL) {
+        fprintf(stderr, "Empty linked list!");
+        return NULL;
+    }
+    if (head->data == value) {
+        Node *temp = head;
+        head = head->next;
+        free(temp);
+        return head;
+    } else {
+        Node *prev = head;
+        Node *curr = head->next;
+        while (curr != NULL) {
+            if (curr->data == value) {
+                //update (shuffle) new pointers
+                prev->next = curr->next;
+                free(curr);
+                break;
+            }
+            prev = curr;
+            curr = curr->next;
+        }
+    }
+    
+    return head;
 }
 
 bool is_empty(Node *head) {
     return head->next == NULL;
 }
 
-
-
-
+/* test your code functions here */
 static void test_node_pointer(void **state) {
     (void) state; //ignore if unused
-
     int *node_ptr = NULL;
     assert_null(node_ptr);
 }
@@ -46,12 +82,18 @@ int main(int argc, char *argv[]) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_node_pointer)
     };
-
+    /* test the unit tests! */
     int test_result = cmocka_run_group_tests(tests, NULL, NULL);
     if (test_result != 0) {
         printf("Some tests failed!\n");
         return cmocka_run_group_tests(tests, NULL, NULL);
     }
     printf("Success! All tests have passed.");
+    
+    //random test casing the singly linked list!
+    Node head;
+    head.data = 1;
+    //head.next == ?
+
     return EXIT_SUCCESS;
 }
