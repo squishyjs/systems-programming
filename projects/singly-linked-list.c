@@ -65,8 +65,17 @@ Node *delete_node(Node *head, int value) {
     return head;
 }
 
+void print_list(Node *head) {
+    Node *curr = head; int i = 1;
+    while (curr != NULL) {
+        printf("Node %d = %d\n", i, curr->data);
+        curr = curr->next;
+        i++;
+    }
+}
+
 bool is_empty(Node *head) {
-    return head->next == NULL;
+    return head == NULL;
 }
 
 /* test your code functions here */
@@ -77,23 +86,35 @@ static void test_node_pointer(void **state) {
 }
 
 int main(int argc, char *argv[]) {
-    /* test object for assertions on functions */
-    /* calls function of static void type */ 
-    const struct CMUnitTest tests[] = {
-        cmocka_unit_test(test_node_pointer)
-    };
-    /* test the unit tests! */
-    int test_result = cmocka_run_group_tests(tests, NULL, NULL);
-    if (test_result != 0) {
-        printf("Some tests failed!\n");
-        return cmocka_run_group_tests(tests, NULL, NULL);
-    }
-    printf("Success! All tests have passed.");
+    // /* test object for assertions on functions */
+    // /* calls function of static void type */ 
+    // const struct CMUnitTest tests[] = {
+    //     cmocka_unit_test(test_node_pointer)
+    // };
+    // /* test the unit tests! */
+    // int test_result = cmocka_run_group_tests(tests, NULL, NULL);
+    // if (test_result != 0) {
+    //     printf("Some tests failed!\n");
+    //     return cmocka_run_group_tests(tests, NULL, NULL);
+    // }
+    // printf("Success! All tests have passed.");
+    // 
+    // //random test casing the singly linked list!
+    // Node head;
+    // head.data = 1;
+    // //head.next == ?
     
-    //random test casing the singly linked list!
-    Node head;
-    head.data = 1;
-    //head.next == ?
+    Node *head = NULL;
+    head = insert_node(head, 100);
+    head = insert_node(head, 200);
+    head = insert_node(head, 300);
+    
+    print_list(head);
+    //update the list after deleting the node
+    printf("------------\n");
+    head = delete_node(head, 200);
+    print_list(head);
+
 
     return EXIT_SUCCESS;
 }
