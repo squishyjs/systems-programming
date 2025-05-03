@@ -270,12 +270,12 @@ void (*update_board_on_guess(struct GridBoard *game_board, Guess *coordinate))()
     int  row_player_guess = coordinate->row;
     char col_player_guess = coordinate->col;
     //begin for loop over board
-    for (int i = 0; i < ROWS; ++i) {
-        for (int j = 0; j < COLS; ++j) {
-            if (i == row_player_guess && j == col_player_guess) {
+    for (int row = 0; row < ROWS; ++row) {
+        for (int column = 0; column < COLS; ++column) {
+            if (row == row_player_guess && column == col_player_guess) {
                 //current cell should point to cell in game_board
                 //need to check if some FUNNY BUSINESS IS GOING ON HERE:
-                Cell *current_cell = &game_board->board[i][j];
+                Cell *current_cell = &game_board->board[row][column];
                 /* check if cell contains a ship segment */
                 if (current_cell->has_ship)
                     successful_hit = true;
