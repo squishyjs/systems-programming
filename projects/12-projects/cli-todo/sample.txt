@@ -1,0 +1,35 @@
+PROJECT DEFINITION
+
+- Title
+- Priority levels (choose between "can wait", "low", "medium", "urgent")
+- Status levels (choose between "Not started", "In Progress", "Complete!")
+- `empty` description in file for the user to add to
+- Creating a new `todo` creates .txt file stored in directory "tasks", e.g:
+
+Title: Complete 2017 DSA Past Exam Paper
+Priority: Medium
+Status: Not started
+Description/extra:
+[empty]
+...
+...
+...
+[empty]
+
+
+Sample i/o pipeline:
+--------------------------------------------
+Questions -> customised task created -> file created -> user adds more if like
+--------------------------------------------
+
+"Welcome to your TODO list, John!"
+"You have 0 TODO items to complete!"  //number can be determined by counting the number of files that have
+progress equal to "Complete!"
+(while true) {
+"Would you like to:
+1. View current tasks
+2. Create a new task
+3. Exit cli-todo
+"
+}
+"Gracefully handle input and output"
