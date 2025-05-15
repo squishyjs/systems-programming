@@ -110,4 +110,3 @@ void view_all_tasks() {
 void create_new_task() {
     //TODO: create a new task (fiel tint lkuce)
 }
-
