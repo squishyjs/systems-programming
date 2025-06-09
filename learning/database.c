@@ -145,7 +145,7 @@ void delete_database(struct Connection *conn, int id) {
     conn->db->rows[id] = addr;
 }
 
-void list_database(struct Connection *conn) {
+char* list_database(struct Connection *conn) {
     struct Database *db = conn->db;
     for (int i = 0; i < MAX_ROWS; ++i) {
         struct Address *curr_addr = &db->rows[i];
@@ -154,6 +154,7 @@ void list_database(struct Connection *conn) {
             print_address(curr_addr);
         }
     }
+    return EXIT_SUCCESS;
 }
 
 /***************/
