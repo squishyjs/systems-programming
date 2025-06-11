@@ -119,8 +119,7 @@ void clear_input_buffer() {
 void delete_task() {
     create_directory();
     char filename[256];
-    printf("Enter the title of the task to delete: "); 
-    F;
+    printf("Enter the title of the task to delete: "); F;
     clear_input_buffer(); // This was redundant, removed
     fgets(filename, sizeof(filename), stdin);
     filename[strcspn(filename, "\n")] = 0;
@@ -134,6 +133,7 @@ void delete_task() {
         printf("Failed to delete task: %s\n", filename);
     }
 }
+
 bool task_dir_exists() {
     DIR *task_directory = opendir("./tasks");
     if (task_directory) {
@@ -192,17 +192,16 @@ void view_all_tasks() {
         
         // Check if path is regular file and ends with .txt
         if (stat(path, &st) == 0 && S_ISREG(st.st_mode)) {
-            // Only display .txt files
             char *ext = strrchr(entry->d_name, '.');
             if (ext && strcmp(ext, ".txt") == 0) {
-                // Display task title (filename without .txt extension)
+                // display task title (w/o .txt)
                 char title[256];
                 strncpy(title, entry->d_name, strlen(entry->d_name) - 4); // Remove .txt
                 title[strlen(entry->d_name) - 4] = '\0';
                 
                 printf("%d. %s\n", ++task_count, title);
                 
-                // Optionally read and display task status
+                // read and display task status
                 FILE *fp = fopen(path, "r");
                 if (fp) {
                     char line[1024];
