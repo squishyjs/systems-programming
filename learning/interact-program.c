@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define F               fflush(stdout)
 #define NAME_BUFFER     20
@@ -30,10 +31,10 @@ int main(void) {
         if (fgets(buffer, sizeof(buffer), stdin) != NULL
             && sscanf(buffer, "%d", &age) == 1
             && age >= 1 && age <= 150) {
-            ok = 1;
+            ok = true;
         } 
         else {
-            ok = 0;
+            ok = false;
             printf("Invalid age! Please enter again...\n");
         }
     } while (!ok);
