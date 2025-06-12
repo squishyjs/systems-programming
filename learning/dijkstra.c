@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -12,6 +13,9 @@ int main(void) {
 
     printf("%d\n", P_INFINITY);
     printf("%d\n", N_INFINITY);
+
+    int max_negative = INTMAX_MIN;
+    int max_positive = INTMAX_MAX;
 
     return 0;
 }
