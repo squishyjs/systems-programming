@@ -201,7 +201,6 @@ static int compare_by_id(const void *student_1, const void *student_2) {
     const Student *s1 = student_1;
     const Student *s2 = student_2;
 
-    
     return (s1->studentID > s2->studentID) - (s1->studentID < s2->studentID);
 }
 
@@ -209,9 +208,7 @@ static int comapre_by_grade_desc(const void *student_1, const void *student_2) {
     const Student *s1 = student_1;
     const Student *s2 = student_2;
 
-    
     // TODO: need to get their GPA over the 5 grades, then compare
-
     return EXIT_FAILURE;
 }
 
