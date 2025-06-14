@@ -160,7 +160,7 @@ void add_student(GradeBook *grade_book) {
 
 void view_all_students(GradeBook *grade_book) {
     if (grade_book->count == 0) {
-        printf("\nNo student record in the database!\n");
+        printf("\nNo student record found in database.\n");
         return;
     }
 
@@ -187,7 +187,7 @@ void search_student(GradeBook *grade_book, const char *query_name) {
             return;
         }
     }
-    printf("\nNo student found in record database.\n");
+    printf("\nNo student record found in database.\n");
 }
 
 static int compare_by_name(const void *student_1, const void *student_2) {
