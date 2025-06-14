@@ -9,6 +9,7 @@
 #define F                       fflush(stdout)
 #define PFLUSH(...)             do { printf(__VA_ARGS__); fflush(stdout); } while (0);
 #define FREE(ptr)               do { free(ptr); (ptr) = NULL; } while (0)
+
 #define DB_NAME                 "StudentGradeBookDatabaseSystem"
 #define DB_STATUS               "FIXING"
 #define INIT_BUF                64
@@ -68,20 +69,20 @@ char *read_line(void) {
     return buf;                         /* caller frees */
 }
 
-void print_student(Student student) {
-    printf("\nStudent name: %s\n", student.name);
-    printf("Student id: %d\n", student.studentID);
+void print_student(Student *student) {
+    printf("\nStudent name: %s\n", student->name);
+    printf("Student id: %d\n", student->studentID);
 
     printf("Grades: ");
     for (int i = 0; i < NUM_SUBJECTS; ++i) {
         if (i == NUM_SUBJECTS - 1) {
-            printf("%.2f\n", student.grades[i]); F;
+            printf("%.2f\n", student->grades[i]); F;
             continue;
         }
-        printf("%.2f, ", student.grades[i]);
+        printf("%.2f, ", student->grades[i]);
     }
 
-    printf("Grade Average: %.2f\n", student.average);
+    printf("Grade Average: %.2f\n", student->average);
 }
 
 bool invalid_grade(float grade) {
@@ -136,7 +137,7 @@ Student new_student() {
     new_student.average = average;
 
     // print student information
-    print_student(new_student);
+    print_student(&new_student);
     
     return new_student;
 }
@@ -182,7 +183,7 @@ void search_student(GradeBook *grade_book, const char *query_name) {
     for (int i = 0; i < grade_book->count; ++i) {
         if (strcmp(grade_book->students[i].name, query_name) == 0) {
             printf("\nStudent Found.\n");
-            print_student(grade_book->students[i]);
+            print_student(&grade_book->students[i]);
 
             return;
         }
@@ -307,7 +308,7 @@ void print_goodbye(void) {
 int main(void) {
     struct GradeBook class_grades;
     class_grades.count = 0;
-    class_grades.student_info = print_student; // function pointer
+    class_grades.student_info = &print_student; // function pointer
 
     // int num_students = 3;
     // printf("\nGradebook System: Enter info for %d students.\n", num_students);
