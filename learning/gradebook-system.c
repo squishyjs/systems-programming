@@ -1,3 +1,4 @@
+#include <complex.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -5,13 +6,18 @@
 #include <math.h>
 #include <stdbool.h>
 
-#define F                   fflush(stdout)
-#define INIT_BUF            64
-#define MAX_NAME_LEN        100
-#define MAX_STUDENTS        1000
-#define NUM_SUBJECTS        5
-#define VIEWING             true     
+#define F                       fflush(stdout)
+#define PFLUSH(...)             do { printf(__VA_ARGS__); fflush(stdout); } while (0);
+#define FREE(ptr)               do { free(ptr); (ptr) = NULL; } while (0)
+#define DB_NAME                 "StudentGradeBookDatabaseSystem"
+#define DB_STATUS               "FIXING"
+#define INIT_BUF                64
+#define MAX_NAME_LEN            100
+#define MAX_STUDENTS            1000
+#define NUM_SUBJECTS            5
+#define VIEWING                 true     
 
+enum CompareFunc { CMP_NAME=1, CMP_ID, CMP_GRADE };
 enum DatabaseOpts {
     ADD_STUDENT=1,
     VIEW_ALL,
@@ -35,31 +41,31 @@ typedef struct GradeBook {
 } GradeBook;
 
 char *read_line(void) {
-    int size = INIT_BUF;
-    char *buffer = malloc(INIT_BUF);
-     if (!buffer) {
+    const size_t INIT = 64;             /* start with 64 bytes */
+    size_t cap = INIT, len = 0;
+    char *buf = malloc(cap);
+    if (!buf) return NULL;
+
+    int ch;
+    while ((ch = fgetc(stdin)) != '\n' && ch != EOF) {
+        if (len + 1 >= cap) {           /* +1 for '\0', appended at the end */
+            cap *= 2;
+            char *tmp = realloc(buf, cap);
+            if (!tmp) { free(buf); return NULL; }
+            buf = tmp;
+        }
+        buf[len++] = (char)ch;
+    }
+
+    if (ch == EOF && len == 0) {        /* nothing read → EOF → caller sees NULL */
+        free(buf);
         return NULL;
     }
+    if (len && buf[len-1] == '\r')      /* strip Windows CR */
+        len--;
 
-    int i = 0;
-    int ch;
-
-    while ((ch = getchar() != '\n' && ch != EOF)) {
-        if (i >= size - 1) {
-            size *= 2;
-            char *new_buffer = realloc(buffer, size);
-            if (!new_buffer) {
-                free(buffer);
-
-                return NULL;
-            }
-            buffer = new_buffer;
-        }
-        buffer[i++] = (char)ch;
-    }
-
-    buffer[i] = '\0';
-    return buffer;      // caller must free input buffer
+    buf[len] = '\0';
+    return buf;                         /* caller frees */
 }
 
 void print_student(Student student) {
@@ -129,6 +135,7 @@ Student new_student() {
     average = average / NUM_SUBJECTS;
     new_student.average = average;
 
+    // print student information
     print_student(new_student);
     
     return new_student;
@@ -136,7 +143,7 @@ Student new_student() {
 
 void free_gradebook(GradeBook *grade_book) {
     for (int i = 0; i < grade_book->count; ++i) {
-        // free strdup malloc
+        // free strdup malloc used for name
         free(grade_book->students[i].name);
     }
     // uncomment the below if using dynamic memory
@@ -146,33 +153,90 @@ void free_gradebook(GradeBook *grade_book) {
 void add_student(GradeBook *grade_book) {
     printf("\n==== Adding New Student ====\n");
 
-    grade_book->students[grade_book->count] = new_student(); // create the new student (process)
+    grade_book->students[grade_book->count] = new_student(); // create the new student
     grade_book->count++;
 
 }
 
 void view_all_students(GradeBook *grade_book) {
-    // TODO
+    if (grade_book->count == 0) {
+        printf("\nNo student record in the database!\n");
+        return;
+    }
+
     float class_total = 0;
-    printf("\n======= Summary =======");
+    printf("\n================ Summary ================");
     for (int i = 0; i < grade_book->count; ++i) {
         grade_book->student_info(grade_book->students[i]);
         class_total += grade_book->students[i].average;
     }
-    printf("=======================\n");
+    printf("=========================================\n");
 }
 
-void search_student(GradeBook *grade_book) {
-    // TODO
+void search_student(GradeBook *grade_book, const char *query_name) {
+    // FIXME
+    if (!grade_book || !query_name) {
+        return;                             /* basic guard */
+    }
+
+    for (int i = 0; i < grade_book->count; ++i) {
+        if (strcmp(grade_book->students[i].name, query_name) == 0) {
+            printf("\nStudent Found.\n");
+            print_student(grade_book->students[i]);
+
+            return;
+        }
+    }
+    printf("\nNo student found in record database.\n");
 }
 
-void sort_students(GradeBook *grade_book) {
-    // TODO
+static int compare_by_name(const void *student_1, const void *student_2) {
+    const Student *s1 = student_1;
+    const Student *s2 = student_2;
+
+    return strcmp(s1->name, s2->name);
 }
 
-void save_exit() {
-    // TODO
-    // free database memory grade book?
+static int compare_by_id(const void *student_1, const void *student_2) {
+    const Student *s1 = student_1;
+    const Student *s2 = student_2;
+
+    
+    return (s1->studentID > s2->studentID) - (s1->studentID < s2->studentID);
+}
+
+static int comapre_by_grade_desc(const void *student_1, const void *student_2) {
+    const Student *s1 = student_1;
+    const Student *s2 = student_2;
+
+    
+    // TODO: need to get their GPA over the 5 grades, then compare
+
+    return EXIT_FAILURE;
+}
+
+void sort_students_desc(
+    GradeBook *grade_book,
+    int (*cmp)(const void *, const void *))
+{
+    // FIXME
+    if (!grade_book || grade_book->count == 0) {
+        return;
+    }
+    
+    qsort(grade_book->students, grade_book->count, sizeof(Student), cmp);
+}
+
+void sort_students_asc(
+    GradeBook *grade_book,
+    int (*cmp)(const void *, const void *))
+{
+    // FIXME
+    if (!grade_book || grade_book->count == 0) {
+        return;
+    }
+    
+    qsort(grade_book->students, grade_book->count, sizeof(Student), cmp);
 }
 
 void launch_student_database(GradeBook *grade_book_db) {
@@ -203,13 +267,31 @@ void launch_student_database(GradeBook *grade_book_db) {
                 view_all_students(grade_book_db);
                 break;
             case SEARCH_STUDENT:
-                search_student(grade_book_db);
+                //FIXME
+                char *input_name = read_line();
+                search_student(grade_book_db, input_name);
+                free(input_name);
+
                 break;
             case SORT_STUDENTS:
-                sort_students(grade_book_db);
+                printf("Choose an option between 1 and 3:\n");
+                int opt;
+                scanf("%d", &opt);
+                
+                switch (opt) {
+                    case CMP_NAME:
+                        sort_students_desc(grade_book_db, compare_by_name);
+                        break;
+                    case CMP_ID:
+                        sort_students_desc(grade_book_db, compare_by_id);
+                        break;
+                    case CMP_GRADE:
+                        sort_students_desc(grade_book_db, comapre_by_grade_desc);
+                }
+
                 break;
+
             case SAVE_AND_EXIT:
-                save_exit();
                 PROGRAMMING = false;
                 break;
             default:
@@ -217,6 +299,12 @@ void launch_student_database(GradeBook *grade_book_db) {
                 break;
         }
     }
+}
+
+void print_goodbye(void) {
+    printf("=============");
+    printf("\nGoodbye!\n");
+    printf("=============");
 }
 
 int main(void) {
@@ -227,7 +315,7 @@ int main(void) {
     // int num_students = 3;
     // printf("\nGradebook System: Enter info for %d students.\n", num_students);
 
-    // for (int i = 0; i < num_students; ++i) {
+    // for (int i = 0; i < num_students; ++i) { // get the number of students in the current_database
     //     printf("\n==== Student %d ====\n", i + 1);
     //     class_grades.students[i] = new_student();
 
@@ -247,7 +335,7 @@ int main(void) {
     // free memory
     launch_student_database(&class_grades);
     free_gradebook(&class_grades);
-    printf("\nGoodbye!\n");
+    print_goodbye();
 
     return EXIT_SUCCESS;
 }
