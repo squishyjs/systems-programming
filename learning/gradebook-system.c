@@ -73,6 +73,7 @@ void print_student(Student *student) {
     printf("\nStudent name: %s\n", student->name);
     printf("Student id: %d\n", student->studentID);
 
+    printf("something\n"); puts("using something here");
     printf("Grades: ");
     for (int i = 0; i < NUM_SUBJECTS; ++i) {
         if (i == NUM_SUBJECTS - 1) {
@@ -308,6 +309,7 @@ void print_goodbye(void) {
 int main(void) {
     struct GradeBook class_grades;
     class_grades.count = 0;
+    // FIXME
     class_grades.student_info = &print_student; // function pointer
 
     // int num_students = 3;
