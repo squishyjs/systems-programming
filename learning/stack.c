@@ -26,7 +26,7 @@ void push_element(Stack *stack, int element) {
         stack->data[++(stack->top_element)] = element;
         printf("Pushed %d to top of stack.\n", element);
     } else {
-        fprintf(stderr, "Stack overflow.\n");
+        fprintf(stderr, "error: stack overflow.\n");
     }
 }
 
@@ -37,7 +37,7 @@ void pop_element(Stack *stack) {
         printf("Removed top element (%d) from stack.\n", stack->top_element);
         stack->top_element--;
     } else {
-        fprintf(stderr, "Stack underflow.\n");
+        fprintf(stderr, "error: stack underflow.\n");
     }
 }
 
@@ -50,7 +50,8 @@ int top_element(Stack *stack) {
     if (stack->top_element >= 0) {
         return stack->data[stack->top_element];
     } else {
-        printf("Stack is empty.\n");
+        fprintf(stderr, "error: empty stack.\n");
+        // printf("error: stack is empty.\n");
         goto error;
     }
 error:
@@ -64,13 +65,13 @@ bool is_empty(Stack *stack) {
 Stack *create_stack(int capacity) {
     Stack *my_stack         = malloc(sizeof(Stack));
     if (!my_stack) {
-        fprintf(stderr, "Malloc for stack failed.\n");
+        fprintf(stderr, "errro: malloc (stack) failed.\n");
         return NULL;
     }
     //members
     my_stack->data          = malloc(sizeof(int) * capacity);
     if (!my_stack->data) {
-        fprintf(stderr, "Malloc for data failed.\n");
+        fprintf(stderr, "error: malloc (data) failed.\n");
         free(my_stack);
         return NULL;
     }
@@ -91,7 +92,7 @@ int main(void) {
     Stack *my_new_stack = create_stack(100);
     check_mem(my_new_stack);
     if (my_new_stack->empty(my_new_stack)) {
-        printf("Stack IS empty!\n");
+        fprintf(stderr, "error: stack empty.\n");
     }
     my_new_stack->push(my_new_stack, 1);
     my_new_stack->push(my_new_stack, 5);
@@ -104,7 +105,7 @@ int main(void) {
         printf("Stack IS NOT empty!\n");
     }
 
-    //free heap memory
+    // free heap memory
     free(my_new_stack->data);
     free(my_new_stack);
 error:
