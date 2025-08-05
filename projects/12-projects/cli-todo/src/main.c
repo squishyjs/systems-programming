@@ -191,21 +191,25 @@ void view_all_tasks() {
         }
         
         // Check if path is regular file and ends with .txt
-        if (stat(path, &st) == 0 && S_ISREG(st.st_mode)) {
+        if (stat(path, &st) == 0 && S_ISREG(st.st_mode)) 
+        {
             char *ext = strrchr(entry->d_name, '.');
-            if (ext && strcmp(ext, ".txt") == 0) {
+            if (ext && strcmp(ext, ".txt") == 0) 
+            {
                 // display task title (w/o .txt)
                 char title[256];
                 strncpy(title, entry->d_name, strlen(entry->d_name) - 4); // Remove .txt
                 title[strlen(entry->d_name) - 4] = '\0';
                 
                 printf("%d. %s\n", ++task_count, title);
-                
+
                 // read and display task status
                 FILE *fp = fopen(path, "r");
-                if (fp) {
+                if (fp) 
+                {
                     char line[1024];
-                    while (fgets(line, sizeof(line), fp)) {
+                    while (fgets(line, sizeof(line), fp))
+                    {
                         if (strncmp(line, "Status:", 7) == 0) {
                             printf("   %s", line);
                             break;
