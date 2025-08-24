@@ -1,19 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-    
+
 void different_ways_to_modify_string() {
     /* heap allocated string (always check for NULL and call free() later) */
     char *str = malloc(6);
     strcpy(str, "Hello");
-    
+
     /* safest way to initialise stirng */
     const char *safe_string = "Hello";
     for (int i = 0; safe_string[i] != '\0'; ++i) {
         printf("Character %d: %c\n", i, safe_string[i]);
     }
-    
-    /* character arrays with literals (modifiable) */ 
+
+    /* character arrays with literals (modifiable) */
     char string_array[] = "Hi there!";
 
     free(str);
