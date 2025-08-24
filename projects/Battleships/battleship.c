@@ -52,34 +52,28 @@ typedef struct {
 typedef struct {
     int row;
     int col;
-    bool has_ship;              // TRUE -> occupied by ship
-    bool is_hit;                // TRUE -> marked by 'O'
+    bool has_ship;
+    bool is_hit;
 } Cell;
 
 typedef struct {
-    /* an array of board Cells (vertical or horizontal) */
     ShipType segment;
-    //array of Cell
-    Cell ship_body[];                // should be dynamically allocated
+    Cell ship_body[];
 } Segment;
 
-//TODO: Implement specific battleship types
 typedef struct Battleship {
-    bool is_sunk;               // TRUE -> ship_health is dead
-    Segment ship_type;          // may need to be a pointer instead
+    bool is_sunk;
+    Segment ship_type;
     char *ship_name;
 
-    bool (*alive)(struct Battleship *self);   //TRUE -> e.g. ship array segment = [1, 1, 1, 1];
+    bool (*alive)(struct Battleship *self);   // TRUE -> e.g. ship array segment = [1, 1, 1, 1];
     void (*get_position)(struct Battleship *self);
     void (*get_ship_status)(struct Battleship *self);
 } Battleship;
 
 struct GridBoard {
-    /* board has a list of battleships */
+    // a board is a grid of Cell
     Cell board[ROWS][COLS];
-    //probably need to allocate some memory for the ships and place
-    //them in an array remove them from the array if all its cells
-    //constructing a segment is terminated
 
     void (*print_board)(struct GridBoard*);
 };
@@ -111,7 +105,7 @@ void trim_newline(char *s) {
 }
 
 struct Battleship* create_battleship(ShipType battleship_size) {
-    /* allocate memory for battleship */
+    // allocate battleship memory
     size_t ship_size = battleship_size.size;
     struct Battleship *new_battleship = malloc(sizeof(struct Battleship) + sizeof(Cell) * ship_size);
     switch (battleship_size.size) {
@@ -119,7 +113,8 @@ struct Battleship* create_battleship(ShipType battleship_size) {
             new_battleship->is_sunk = false;
             new_battleship->ship_type.segment.size = 5;
             new_battleship->ship_name = "CARRIER";
-            /* define ship coordinates -> GridBoard */
+
+            // ship coordinates
             new_battleship->ship_type.ship_body[0].row = 'B';
             new_battleship->ship_type.ship_body[0].col = 2;
             new_battleship->ship_type.ship_body[0].has_ship = true;
@@ -273,13 +268,13 @@ error:
 bool is_valid_guess(Guess *coordinate) {
     char row_guess = coordinate->row;
     int  col_guess = coordinate->col;
-    //TODO: validate guess
+
     if (check_guess(row_guess, col_guess) == true)
         return true;
     return false;
 }
 
-//TODO: refresh board after player (x, y) guess
+// FIXME
 void (*update_board_on_guess(struct GridBoard *game_board, Guess *coordinate))() {
     /* validate player guess */
     if (!is_valid_guess(coordinate)) {
@@ -346,7 +341,8 @@ void initiate_board(struct GridBoard* grid_board) {
 
     display_board(grid_board);
 }
-//TODO: place ship -> board
+
+// TOOD
 void place_ship(struct GridBoard *game_board, Battleship *ship) {
     size_t ship_size = ship->ship_type.segment.size;
     for (size_t i = 0; i < ship_size; ++i) {
@@ -367,7 +363,6 @@ bool process_guess(struct GridBoard *game_board, Battleship *ships[], Guess *coo
     game_board->board[row_index][col_index].is_hit = true;
 
     if (game_board->board[row_index][col_index].has_ship) {
-        /* check which ship was hit and update its status */
         for (int i = 0; i < MAX_SIZE; ++i) {
             Battleship *ship = ships[i];
             for (size_t j = 0; j < ship->ship_type.segment.size; ++j) {
@@ -375,7 +370,7 @@ bool process_guess(struct GridBoard *game_board, Battleship *ships[], Guess *coo
                 if (body->row - 'A' == row_index && body->col - 1 == col_index) {
                     body->is_hit = true;
 
-                    /* check if status -> sunk */
+                    // check if ship sunk
                     bool is_sunk = true;
                     for (size_t k = 0; k < ship->ship_type.segment.size; ++k) {
                         if (!ship->ship_type.ship_body[k].is_hit) {
@@ -389,12 +384,15 @@ bool process_guess(struct GridBoard *game_board, Battleship *ships[], Guess *coo
                         printf("You sunk the %s\n", ship->ship_name);
                     }
 
-                    return true; //valid hit!
+                    // hit
+                    return true;
                 }
             }
         }
     }
-    return false; //valid miss!
+
+    // miss
+    return false;
 }
 
 // TODO
