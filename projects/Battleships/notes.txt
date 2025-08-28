@@ -1,9 +1,8 @@
-
-Battleships is a guessing game playe on a ruled grid board in which each player's WARSHIPS are marked. Each ship occupies a 
-number of consecutive squares on the grid, arranged either horizontally or vertically. The number of suqares for each ship is determined by the type of ship. The ships CANNOT overlap (i.e., only one ship can occupy any given square in the grid) or be 
+Battleships is a guessing game playe on a ruled grid board in which each player's WARSHIPS are marked. Each ship occupies a
+number of consecutive squares on the grid, arranged either horizontally or vertically. The number of suqares for each ship is determined by the type of ship. The ships CANNOT overlap (i.e., only one ship can occupy any given square in the grid) or be
 placed diagonally. The game is a discovery game in whic players need to discover the ship's positions.
 
-Types of Battleships (1990 version):
+Battleship Types (1990 version):
  - Carrier (size 5)
  - Battleship (size 4)
  - Cruiser (size 3)
@@ -24,7 +23,7 @@ H . . . . . . . . CR .
 I . S S S . . . . CR .
 J . . . . . D D . . .
 
-Example positions: 
+Example positions:
  - Carrier at:	    (B2, C2, D2, E2, F2)(B2-F2)
  - Battleship at:   (A6, A7, A8, A9)(A6-A9)
  - Cruiser at:	    (G9, H9, I9)(G9-I9)
@@ -34,7 +33,7 @@ Example positions:
 
 -----------------------------------------------------------------------------------------------------------
 
-What I will need:
+some requirements
 
 - Board (two-dimensional array)
 - Board Cell Struct (holds information about two things: coordinate on board, and whether it is occupied or not)
@@ -45,4 +44,3 @@ What I will need:
 	- And a segment will represent a row (horizontal or vertical) of cells
 	- Need to gracefully handle missed shots
 	- Battleships will need random position in future (will remain static for now)
--

@@ -19,20 +19,21 @@
 #define EMPTY           '.'
 #define FAIL            -1
 
-const bool PLAYING      = true;
-const int NO_SHIPS      = 0;
-int ALIVE_SHIPS         = 5;
+const bool PLAYING            = true;
+const int NUMBER_OF_SHIPS     = 5;
+const int NO_SHIPS            = 0;
+volatile int SHIPS_ALIVE      = 5;
 
 const int VALID_COLUMNS[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 const char VALID_ROWS[]   = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
-const char *ShipTypes[] = {
+const char *ShipTyes[] = {
      "Carrier", "Battleship",
      "Cruiser", "Submarine",
      "Destroyer"
 };
 
 enum BATTLESHIPS {
-    /* Five initial battleships on board */
+    // battleship types
     CARRIER=1,
     BATTLESHIP,
     CRUISER,
@@ -52,6 +53,7 @@ typedef struct {
 typedef struct {
     int row;
     int col;
+    char cell;
     bool has_ship;
     bool is_hit;
 } Cell;
@@ -61,20 +63,19 @@ typedef struct {
     Cell ship_body[];
 } Segment;
 
+
 typedef struct Battleship {
     bool is_sunk;
     Segment ship_type;
     char *ship_name;
 
-    bool (*alive)(struct Battleship *self);   // TRUE -> e.g. ship array segment = [1, 1, 1, 1];
+    bool (*alive)(struct Battleship *self);     // true -> e.g. ship array segment = [1, 1, 1, 1];
     void (*get_position)(struct Battleship *self);
     void (*get_ship_status)(struct Battleship *self);
 } Battleship;
 
 struct GridBoard {
-    // a board is a grid of Cell
-    Cell board[ROWS][COLS];
-
+    Cell board[ROWS][COLS];                     // board is a grid of Cell
     void (*print_board)(struct GridBoard*);
 };
 
@@ -84,24 +85,24 @@ const Cell CRUISER_SEGMENT[3];
 const Cell SUBMARINE_SEGMENT[3];
 const Cell DESTROYER_SEGMENT[2];
 
-char *toLower(char *s) {
-    for (char *p = s; *p; ++p) {
-        *p = tolower(*p);
-    }
-
-    return s;
-}
-
-char *toUpper(char *s) {
-    for (char *p = s; *p; ++p) {
+char *toUpper(char *str) {
+    for (char *p = str; *p; ++p) {
         *p = toupper(*p);
     }
 
-    return s;
+    return str;
 }
 
-void trim_newline(char *s) {
-    s[strcspn(s, "\n")] = '\0';
+char *toLower(char *str) {
+    for (char *p = str; *p; ++p) {
+        *p = toupper(*p);
+    }
+
+    return str;
+}
+
+void trim_newline(char *str) {
+    str[strcspn(str, "\n")] = '\0';
 }
 
 struct Battleship* create_battleship(ShipType battleship_size) {
@@ -246,38 +247,36 @@ void print_miss_status() {
     printf("Miss. Better luck next time!\n");
 }
 
-bool check_guess(char row_guess, int col_guess) {
-    // check(row_guess != NULL, "Row guess is invalid.\n");
-    // check(col_guess != NULL, "Column guess is invalid.\n");
-
-    bool v_row = false, v_col = false;
-    for (int i = 0; i < ROWS; ++i) {
-        if (VALID_ROWS[i] == row_guess)
-            v_row = true;
-    }
-    for (int i = 0; i < COLS; ++i) {
-        if (VALID_COLUMNS[i] == col_guess)
-            v_col = true;
-    }
-    return (v_row && v_col);
-error:
-    printf("<error print> Invalid coordinate");
-    return false;
-}
-
-bool is_valid_guess(Guess *coordinate) {
+// FIXME: Guessed coordinate not properly handled
+bool is_valid_guess(struct GridBoard *game_board, Guess *coordinate) {
     char row_guess = coordinate->row;
     int  col_guess = coordinate->col;
 
-    if (check_guess(row_guess, col_guess) == true)
-        return true;
-    return false;
+    if (row_guess < 'A' || row_guess > 'J') {
+        return false;
+    }
+
+    if (col_guess < 1 || col_guess > 10) {
+        return false;
+    }
+
+    // check if already guessed
+    for (int row = 0; row < ROWS; ++row) {
+        for (int col = 0; col < COLS; ++col) {
+            if (game_board->board[row][col].cell != EMPTY) {
+                printf("You have already guessed this coordinate. Please try again.\n");
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 // FIXME
 void (*update_board_on_guess(struct GridBoard *game_board, Guess *coordinate))() {
     /* validate player guess */
-    if (!is_valid_guess(coordinate)) {
+    if (!is_valid_guess(game_board, coordinate)) {
         printf("Please enter a valid guess");
         exit(FAIL);
     }
@@ -297,14 +296,12 @@ void (*update_board_on_guess(struct GridBoard *game_board, Guess *coordinate))()
             }
         }
     }
+
     return hit ? &print_hit_status : &print_miss_status;
 }
 
-// FIXME
-void get_current_ship_position(Battleship *self) {
-    // printf("The %s ship is at position (%d,%d)\n",
-    //        self->ship_name,
-    //        self->cell.row, self->cell.col);
+bool alive_ship(Battleship *ship) {
+    return ship->alive;
 }
 
 void display_board(struct GridBoard* grid_board) {
@@ -313,21 +310,30 @@ void display_board(struct GridBoard* grid_board) {
     for (int j = 1; j <= COLS; j++) {
         printf("%2d ", j);
     }
+
     printf("\n");
+
     // rows (A-J)
-    for (int i = 0; i < ROWS; i++) {//
-        printf("%c  ", 'A' + i);
-        for (int j = 0; j < COLS; j++) {
-            char board_coordinate = EMPTY;
-            if (grid_board->board[i][j].is_hit) {
-                if (grid_board->board[i][j].has_ship) {
-                    board_coordinate = HIT;
+    for (int row = 0; row < ROWS; row++) {
+        printf("%c  ", 'A' + row);
+
+        for (int col = 0; col < COLS; col++) {
+            char board_cell = EMPTY;
+
+            if (grid_board->board[row][col].is_hit) {
+
+                if (grid_board->board[row][col].has_ship) {
+                    board_cell = HIT;
                 } else {
-                    board_coordinate = MISS;
+                    board_cell = MISS;
                 }
             }
-            printf(" %c ", board_coordinate);
+
+            // update cell state
+            grid_board->board[row][col].cell = board_cell;
+            printf(" %c ", board_cell);
         }
+
         printf("\n");
     }
 }
@@ -335,14 +341,13 @@ void display_board(struct GridBoard* grid_board) {
 void initiate_board(struct GridBoard* grid_board) {
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLS; j++) {
-            grid_board->board[i][j] = (Cell){i, j, false, false};
+            grid_board->board[i][j] = (Cell){i, j, EMPTY, false, false};
         }
     }
 
     display_board(grid_board);
 }
 
-// TOOD
 void place_ship(struct GridBoard *game_board, Battleship *ship) {
     size_t ship_size = ship->ship_type.segment.size;
     for (size_t i = 0; i < ship_size; ++i) {
@@ -356,43 +361,47 @@ void place_ship(struct GridBoard *game_board, Battleship *ship) {
     }
 }
 
+// FIXME: Need to fix processing guess
 bool process_guess(struct GridBoard *game_board, Battleship *ships[], Guess *coordinate) {
-    int row_index = coordinate->row - 'A';
-    int col_index = coordinate->col - 1;
+    int row = coordinate->row - 'A';
+    int col = coordinate->col - 1;
 
-    game_board->board[row_index][col_index].is_hit = true;
-
-    if (game_board->board[row_index][col_index].has_ship) {
-        for (int i = 0; i < MAX_SIZE; ++i) {
-            Battleship *ship = ships[i];
-            for (size_t j = 0; j < ship->ship_type.segment.size; ++j) {
-                Cell *body = &ship->ship_type.ship_body[j];
-                if (body->row - 'A' == row_index && body->col - 1 == col_index) {
-                    body->is_hit = true;
-
-                    // check if ship sunk
-                    bool is_sunk = true;
-                    for (size_t k = 0; k < ship->ship_type.segment.size; ++k) {
-                        if (!ship->ship_type.ship_body[k].is_hit) {
-                            is_sunk = false;
-                            break;
-                        }
-                    }
-                    if (is_sunk && !ship->is_sunk) {
-                        ship->is_sunk = true;
-                        ALIVE_SHIPS--;
-                        printf("You sunk the %s\n", ship->ship_name);
-                    }
-
-                    // hit
-                    return true;
-                }
-            }
-        }
-    }
+    game_board->board[row][col].is_hit = true;
+    game_board->board[row][col].cell = HIT;
 
     // miss
-    return false;
+    if (!game_board->board[row][col].has_ship) {
+        return false;
+    }
+
+    game_board->board[row][col].is_hit = true;
+
+    return true;
+}
+
+Guess read_guess(void) {
+    char buf[MAX_DATA];
+    Guess guess;
+
+    printf("Enter coordinate (A-J, 1-10)\n");
+
+    // row
+    printf("Row: ");
+    if (!fgets(buf, sizeof(buf), stdin)) {
+        printf("Error.\n");
+    }
+    trim_newline(buf);
+    guess.row = toupper(buf[0]);
+
+    // column
+    printf("Col: ");
+    if (!fgets(buf, sizeof(buf), stdin)) {
+        printf("Error.\n");
+    }
+    trim_newline(buf);
+    guess.col = atoi(buf);
+
+    return guess;
 }
 
 // TODO
@@ -400,39 +409,44 @@ char *attack(Cell attack_coordinate) {
     return "HIT";
 }
 
-bool play_game_true(char *str) {
-    return (strcmp(str, "yes") == 0);
+bool play(char *str) {
+    return (strcmp(toLower(str), "yes") == 0);
 }
 
-bool play_game_false(char *str) {
-    return (strcmp(str, "no") == 0);
+bool not_play(char *str) {
+    return (strcmp(toLower(str), "no") == 0);
+}
+
+bool valid_play(char *str) {
+    return (play(str) || not_play(str));
 }
 
 void start_game(struct GridBoard game_board) {
-    printf("\n-----------------------------BattleShips-----------------------------\n");
+    printf("\n--------------------------BattleShips--------------------------------\n");
     printf("Battleships is a strategy and guessing-type game that involves..well\n");
     printf("battleships. A Grid board of 10 x 10 squares is displayed, with rows\n");
     printf("of A-J, and columns numbered 1-10. In each move, you need to guess\n");
     printf("where a battleship may be. For instance, picking a coordinate (x, y)\n");
     printf("may result in either a hit (X) or miss (O). The goal is then to find\n");
     printf("where all five ships are located, and SINK THEM!. The five ships are:\n\n");
-    printf("                            1. Carrier\n");
-    printf("                            2. Battleship\n");
-    printf("                            3. Cruiser\n");
-    printf("                            4. Submarine\n");
-    printf("                            5. Destroyer\n");
+    printf("                         1. Carrier\n");
+    printf("                         2. Battleship\n");
+    printf("                         3. Cruiser\n");
+    printf("                         4. Submarine\n");
+    printf("                         5. Destroyer\n");
     printf("\n---------------------------------------------------------------------\n");
 
     char input[MAX_DATA];
     printf("Are you ready to play the Battleships game? (yes or no): ");
     fgets(input, sizeof(input), stdin); trim_newline(input);
 
-    while (!play_game_true(input) && !play_game_false(input)) {
+    while (!valid_play(input)) {
         printf("Please enter either 'yes' or 'no'.\n");
         fgets(input, sizeof(input), stdin); trim_newline(input);
     }
 
-    if (play_game_true(input)) {
+    // TODO: main game
+    if (play(input)) {
 
         printf("\n");
         game_board.print_board = initiate_board;
@@ -440,7 +454,7 @@ void start_game(struct GridBoard game_board) {
         game_board.print_board = display_board;
 
         // create ships
-        Battleship *ships[MAX_SIZE];
+        Battleship *ships[NUMBER_OF_SHIPS];
         ships[0] = create_battleship((ShipType){5}); // Carrier
         ships[1] = create_battleship((ShipType){4}); // Battleship
         ships[2] = create_battleship((ShipType){3}); // Cruiser
@@ -453,32 +467,17 @@ void start_game(struct GridBoard game_board) {
         }
 
         // main loop
-        while (ALIVE_SHIPS > NO_SHIPS) {
+        while (SHIPS_ALIVE) {
+            printf("There remains %d ships!\n", SHIPS_ALIVE);
             sleep(1);
-            printf("There remains %d ships!\n", ALIVE_SHIPS);
 
             // read guess
-            Guess player_guess;
-            char buf[MAX_DATA];
-
-            printf("Entering coordinate..\n");
-            printf("Row (A-J): ");
-            fgets(buf, sizeof(buf), stdin);
-            player_guess.row = toupper(buf[0]);
-
-            printf("Column (1-10): ");
-            fgets(buf, sizeof(buf), stdin);
-            player_guess.col = atoi(buf);
-
-            printf("You entered %c%d.\n", player_guess.row, player_guess.col);
-
-            // validate guess
-            if (!is_valid_guess(&player_guess)) {
-                printf("Invalid coordinate. Please try again.\n");
-                continue;
+            Guess player_guess = read_guess();
+            while (!is_valid_guess(&game_board, &player_guess)) {
+                player_guess = read_guess();
             }
 
-            // check guess and update board
+            // TODO: process valid guess
             bool hit = process_guess(&game_board, ships, &player_guess);
             if (hit) {
                 printf("HIT!\n");
@@ -490,7 +489,7 @@ void start_game(struct GridBoard game_board) {
             game_board.print_board(&game_board);
 
             // check game over condition
-            if (ALIVE_SHIPS == NO_SHIPS) {
+            if (SHIPS_ALIVE == NO_SHIPS) {
                 printf("Congratulations! You've sunk all ships!\n");
                 break;
             }
