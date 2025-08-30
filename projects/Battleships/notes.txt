@@ -38,9 +38,20 @@ some requirements
 - Board (two-dimensional array)
 - Board Cell Struct (holds information about two things: coordinate on board, and whether it is occupied or not)
 - Battleships (5 types)
-- Battleships will lie on this 2D array
-	- A battleship will contain a segment of cells
-	- Hence a battleship will be a segment
+- Battleships state placed on grid
+	- A battleship is a Segment on GridBoard
+	- A segment is an array (dynamically allocated) of Cell
 	- And a segment will represent a row (horizontal or vertical) of cells
 	- Need to gracefully handle missed shots
 	- Battleships will need random position in future (will remain static for now)
+
+-----------------------------------------------------------------------------------------------------------
+
+features i want to add
+
+[ ] randomised positions for battleships (consistent segment size)
+[ ] sleep timer before displaying board
+[ ] create two different board states (computer vs human)
+    [ ] choose where to place your ships
+    [ ] AI has random ship location (hidden)
+    - Bigger board
