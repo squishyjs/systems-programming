@@ -301,7 +301,6 @@ bool alive_ship(Battleship *ship) {
 }
 
 void print_sunk_status(char *ship_name) {
-    printf("Hit!\n");
     printf("You sunk the %s!\n", ship_name);
 }
 
@@ -388,7 +387,8 @@ bool is_valid_guess(struct GridBoard *game_board, Guess *coordinate) {
     return true;
 }
 
-void process_guess(struct GridBoard *game_board, Battleship *ships[], Guess *coordinate) {
+// TODO: should return a string (char *guess_result)
+char *process_guess(struct GridBoard *game_board, Battleship *ships[], Guess *coordinate) {
     int row = coordinate->row - 'A';
     int col = coordinate->col - 1;
 
@@ -396,14 +396,13 @@ void process_guess(struct GridBoard *game_board, Battleship *ships[], Guess *coo
     if (!game_board->board[row][col].has_ship) {
         game_board->board[row][col].cell = MISS;
         game_board->board[row][col].guessed = true;
-        printf("Miss!\n");
-        return;
+        return "Miss!\n";
     }
 
     // already hit
     if (game_board->board[row][col].is_hit) {
-        printf("You have already shot here!\n");
-        return;
+        // printf("You have already shot here!\n");
+        return "You have already shot here!\n";
     }
 
     // update cell state
@@ -429,13 +428,12 @@ void process_guess(struct GridBoard *game_board, Battleship *ships[], Guess *coo
                     SHIPS_ALIVE--;
 
                     print_sunk_status(curr_ship.ship_name);
-                    return;
                 }
             }
         }
     }
 
-    printf("Hit!\n");
+    return "Hit!\n";
 }
 
 // FIXME: board not being updated properly, need to fix
@@ -559,7 +557,6 @@ void start_game(struct GridBoard game_board) {
         // main loop
         while (SHIPS_ALIVE > 0) {
             printf("There remains %d ships!\n", SHIPS_ALIVE);
-            sleep(1);
 
             // read guess
             Guess player_guess = read_guess();
@@ -567,11 +564,13 @@ void start_game(struct GridBoard game_board) {
                 player_guess = read_guess();
             }
 
+            sleep(1);
             // TODO: process valid guess
-            process_guess(&game_board, ships, &player_guess);
+            char *result = process_guess(&game_board, ships, &player_guess);
 
             // display board
             display_board(&game_board);
+            printf("%s\n", result);
         }
 
         // game over state
