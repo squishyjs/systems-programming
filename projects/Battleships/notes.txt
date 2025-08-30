@@ -55,3 +55,6 @@ features i want to add
     [ ] choose where to place your ships
     [ ] AI has random ship location (hidden)
     - Bigger board
+
+
+-----------------------------------------------------------------------------------------------------------
