@@ -301,7 +301,7 @@ bool alive_ship(Battleship *ship) {
 }
 
 void print_sunk_status(char *ship_name) {
-    printf("You sunk the %s!\n", ship_name);
+    printf("You sunk the %s!", ship_name);
 }
 
 void display_board(struct GridBoard* grid_board) {
@@ -396,13 +396,13 @@ char *process_guess(struct GridBoard *game_board, Battleship *ships[], Guess *co
     if (!game_board->board[row][col].has_ship) {
         game_board->board[row][col].cell = MISS;
         game_board->board[row][col].guessed = true;
-        return "Miss!\n";
+        return "Miss!";
     }
 
     // already hit
     if (game_board->board[row][col].is_hit) {
         // printf("You have already shot here!\n");
-        return "You have already shot here!\n";
+        return "You have already shot here!";
     }
 
     // update cell state
@@ -410,7 +410,9 @@ char *process_guess(struct GridBoard *game_board, Battleship *ships[], Guess *co
     game_board->board[row][col].guessed = true;
     game_board->board[row][col].cell = HIT;
 
-    // TODO: check WHICH SHIP was hit and update the Cell of its segment to reflect 'hit' state
+    // TODO: check WHICH SHIP was hit and update the Cell of its segment and reflect hit state
+    bool ship_has_sunk = false;
+    char *ship_sunk_name;
     for (int i = 0; i < NUMBER_OF_SHIPS; ++i) {
         Battleship curr_ship = *ships[i];
         for (int j = 0; j < curr_ship.ship_type.segment.size; ++j) {
@@ -418,6 +420,7 @@ char *process_guess(struct GridBoard *game_board, Battleship *ships[], Guess *co
             // coordinates of the (row, col) player guess
             if (ships[i]->ship_type.ship_body[j].row == coordinate->row
                 && ships[i]->ship_type.ship_body[j].col == coordinate->col) {
+
                 ships[i]->ship_type.ship_body[j].is_hit = true;
                 ships[i]->ship_type.ship_body[j].guessed = true;
                 ships[i]->ship_type.ship_body[j].cell = HIT;
@@ -427,10 +430,18 @@ char *process_guess(struct GridBoard *game_board, Battleship *ships[], Guess *co
                     ships[i]->is_sunk = true;
                     SHIPS_ALIVE--;
 
-                    print_sunk_status(curr_ship.ship_name);
+                    // print_sunk_status(curr_ship.ship_name);
+                    ship_has_sunk = true;
+                    ship_sunk_name = curr_ship.ship_name;
                 }
             }
         }
+    }
+
+    static char buf[MAX_DATA];
+    snprintf(buf, sizeof(buf), "Hit!\nYou sunk the %s!", ship_sunk_name);
+    if (ship_has_sunk) {
+        return buf;
     }
 
     return "Hit!\n";
@@ -556,7 +567,11 @@ void start_game(struct GridBoard game_board) {
 
         // main loop
         while (SHIPS_ALIVE > 0) {
+            printf("\n");
+            printf("----------------------\n");
             printf("There remains %d ships!\n", SHIPS_ALIVE);
+            printf("----------------------\n");
+            printf("\n");
 
             // read guess
             Guess player_guess = read_guess();
@@ -564,7 +579,8 @@ void start_game(struct GridBoard game_board) {
                 player_guess = read_guess();
             }
 
-            sleep(1);
+            printf("\n");
+            usleep(500000); //sleep for 0.5 seconds
             // TODO: process valid guess
             char *result = process_guess(&game_board, ships, &player_guess);
 
