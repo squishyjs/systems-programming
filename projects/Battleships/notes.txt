@@ -1,4 +1,4 @@
-Battleships is a guessing game playe on a ruled grid board in which each player's WARSHIPS are marked. Each ship occupies a
+Battleships is a guessing game played on a ruled grid board in which each player's WARSHIPS are marked. Each ship occupies a
 number of consecutive squares on the grid, arranged either horizontally or vertically. The number of suqares for each ship is determined by the type of ship. The ships CANNOT overlap (i.e., only one ship can occupy any given square in the grid) or be
 placed diagonally. The game is a discovery game in whic players need to discover the ship's positions.
 
