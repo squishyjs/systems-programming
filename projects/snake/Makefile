@@ -12,7 +12,7 @@ OUT = snake
 
 #default to -> a.out
 all:
-	$(CC) $(CFLAGS) -o $(OUT) $(SRC)
+	$(CC) $(CFLAGS) -lncurses -o $(OUT) $(SRC)
 
 clean:
 	rm -f $(OUT)
