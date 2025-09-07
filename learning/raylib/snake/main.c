@@ -12,6 +12,7 @@
 ********************************************************************************************/
 
 #include "raylib.h"
+#include <stdint.h>
 
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
@@ -195,7 +196,7 @@ void UpdateGame(void)
                 gameOver = true;
             }
 
-            // Collision with yourself
+            // Self collision
             for (int i = 1; i < counterTail; i++)
             {
                 if ((snake[0].position.x == snake[i].position.x) && (snake[0].position.y == snake[i].position.y)) gameOver = true;
