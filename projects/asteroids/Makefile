@@ -11,7 +11,7 @@ LIBS = -lraylib -lm -ldl -lpthread -lGl -lX11
 SRC = main.c
 
 # executable
-OUT = snake
+OUT = asteroids
 
 all:
 	$(CC) $(CFLAGS) -o $(OUT) $(SRC) $(LIBS)
