@@ -1,18 +1,21 @@
-#compiler
+# compiler
 CC = gcc
 
-#flags
+# flags
 CLFAGS = -Wall -Wextra -std=c11
 
-#source file
-SRC = snake.c
+# libraries
+LIBS = -lraylib -lm -ldl -lpthread -lGl -lX11
 
-#exec
+# source file
+SRC = main.c
+
+# executable
 OUT = snake
 
-#default to -> a.out
 all:
-	$(CC) $(CFLAGS) -lncurses -o $(OUT) $(SRC)
+	$(CC) $(CFLAGS) -o $(OUT) $(SRC) $(LIBS)
 
+# make clean (mclean)
 clean:
 	rm -f $(OUT)
