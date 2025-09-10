@@ -1,54 +1,223 @@
+#include "unitypes.h"
+#include <math.h>
 #include <raylib.h>
 
 #include <stdbool.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <unistdio.h>
 #include <stdio.h>
 #include <string.h>
 
-#define MAX_BULLETS 10000
-#define LIVES       3
+#define MAX_BULLETS     1000
+#define MAX_ASTEROIDS   1000
+#define MAX_BUF         100
+#define FONT_SIZE       20
+#define FONT_LIVES_X    25
+#define FONT_LIVES_Y    20
+#define FONT_SCORE_X    775
+#define FONT_SCORE_Y    500
+#define DEG2RAD         (PI / 180.0f)
 
-static const int screen_width = 800;
-static const int screen_height = 450;
+// -------------------------------------------------------------------
+// screen consts
+// -------------------------------------------------------------------
+static const int screen_width = 900;
+static const int screen_height = 550;
 static const int fps_rate = 120;
 static const char *window_title = "asteroids";
 
-static void update_game(void);
-static void draw_game(void);
-static void update_draw_game(void);
+static int lives = 3;                               // initial lives count
+static int score = 0;                               // initial score
+static const int bullet_damage = 5;
+const int asteroid_speed = 5;
 
-
-typedef struct {
+typedef struct Ship {
     Vector2 position;
-    int lives;
+    Vector2 velocity;                               // speed
+    float rotation;
+    int radius;
+    int sides;
     int bullets[MAX_BULLETS];
+    Color colour;
 } Ship;
 
-void update_game(void) {
+typedef enum {
+    SMALL=1,
+    MEDIUM,
+    LARGE,
+} AsteroidSize;
+
+typedef enum {
+    ROCK,
+    PLATINUM,
+    CARBON,
+    DIAMOND
+} AsteroidType;
+
+typedef struct Asteroid {
+    const char *name;
+    Vector2 velocity;
+    float size;
+    float rotation;
+    AsteroidType a_type;
+    AsteroidSize a_size;
+} Asteroid;
+
+// -------------------------------------------------------------------
+// local module signatures
+// -------------------------------------------------------------------
+static void update_game(Ship *ship);
+static void draw_game(Ship *ship);
+static void update_draw_game(Ship *ship);
+
+// object render functions
+void render_text(void);
+void render_ship(Ship *ship);
+void render_asteroids(Asteroid *asteroids);
+void render_game(Ship *ship);
+
+// collision functions
+void check_ship_asteroid_collision(void);
+void check_bullet_asteroid_collsion(void);
+void check_bullet_ship_collsion(void);
+void check_ship_screen_collision(void);
+void check_asteroid_screen_collision(void);
+
+void render_text() {
+    const char *lives_text = "Lives: ";
+    const char *score_text = "Score: ";
+
+    // dynamimc lives counter
+    char lives_ctr[MAX_BUF];
+    sprintf(lives_ctr, "%d", lives);
+
+    // dynamic score counter
+    char score_ctr[MAX_BUF];
+    sprintf(score_ctr, "%d", score);
+
+    // TODO: render the mini ship icons as the "lives"
+    // TODO: create the icons
+    DrawText(lives_text, FONT_LIVES_X, FONT_LIVES_Y, FONT_SIZE, MAROON);
+    DrawText(lives_ctr, FONT_LIVES_X + 66, FONT_LIVES_Y, FONT_SIZE, MAROON);
+    DrawText(score_text, FONT_SCORE_X, FONT_SCORE_Y, FONT_SIZE, YELLOW);
+    DrawText(score_ctr, FONT_SCORE_X + 78, FONT_SCORE_Y, FONT_SIZE, YELLOW);
+}
+
+void render_ship(Ship *my_ship) {
+    DrawPoly(my_ship->position, my_ship->sides, my_ship->radius, my_ship->rotation, my_ship->colour);
+}
+
+void render_asteroids(Asteroid *asteroids) {
     // TODO:
 }
 
-void draw_game(void) {
-    // TODO:
+void render_game(Ship *ship) {
+    ClearBackground(BLACK);
+
+    render_text();
+    render_ship(ship);
+    // render_asteroids();
 }
 
-void update_draw_game(void) {
+void update_game(Ship *ship) {
+    if (IsKeyDown(KEY_A)) {
+        ship->rotation -= 3.0f;
+    }
+    if (IsKeyDown(KEY_D)) {
+        ship->rotation += 3.0f;
+    }
 
-    // render single frame
-    update_game();
-    draw_game();
+    // handle boosting, velocity, friction
+    if (IsKeyDown(KEY_W)) {
+        float angle_rad = ship->rotation * DEG2RAD;
+        Vector2 direction_vector = {
+            cosf(angle_rad),
+            sinf(angle_rad)
+        };
+
+        // boost (accelerate)
+        ship->velocity.x += (direction_vector.x * 0.1f);
+        ship->velocity.y += (direction_vector.y * 0.1f);
+    } else {
+        // apply friction
+        ship->velocity.x *= 0.99f;
+        ship->velocity.y *= 0.99f;
+    }
+
+    ship->position.x += ship->velocity.x;
+    ship->position.y += ship->velocity.y;
+}
+
+void draw_game(Ship *ship) {
+
+    BeginDrawing();
+
+        render_game(ship);
+
+    EndDrawing();
 
 }
 
+void update_draw_game(Ship *ship) {
+
+    // render a single frame
+    update_game(ship);
+    draw_game(ship);
+
+}
+
+Ship init_ship(Vector2 init_pos) {
+    Ship space_ship;
+    // attributes
+    space_ship.position.x = init_pos.x;
+    space_ship.position.y = init_pos.y;
+    space_ship.radius = 20;
+    space_ship.velocity.x = 0;
+    space_ship.velocity.y = 0;
+    space_ship.rotation = 0;
+    space_ship.colour = BLUE;
+    space_ship.sides  = 3;
+
+    return space_ship;
+}
+
+Asteroid *init_asteroids(int max_asteroids) {
+    Asteroid *asteroids = malloc(sizeof(Asteroid) * MAX_ASTEROIDS);
+    if (asteroids == NULL) {
+        fprintf(stderr, "error: memory alloc failed");
+        exit(1);
+    }
+
+    // initilaise asteroids
+    for (int i = 0; i < max_asteroids; ++i) {
+        // TODO: custom init asteroid
+        // randomise location, velocity, size and type
+        asteroids[i].name = "BIG ROCK";
+        asteroids[i].a_size = LARGE;
+        asteroids[i].a_type = ROCK;
+        asteroids[i].velocity = (Vector2){0.0f, 0.0f};
+        asteroids[i].size = 4.0f;
+        asteroids[i].rotation = 0.5f;
+    }
+
+    return asteroids;
+}
+
+// program entry point
 int main(void) {
 
+    // initalise window and set frame rate
     InitWindow(screen_width, screen_height, window_title);
     SetTargetFPS(fps_rate);
 
+    Vector2 init_pos = {(float)screen_width / 2, (float)screen_height / 2};
+    Ship space_ship = init_ship(init_pos);
+    Asteroid *asteroids = init_asteroids(MAX_ASTEROIDS);
+
     while (!WindowShouldClose()) {
         // main game loop
-        update_draw_game();
+        update_draw_game(&space_ship);
     }
 
     CloseWindow();
