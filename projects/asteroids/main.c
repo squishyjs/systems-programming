@@ -1,4 +1,5 @@
 #include "unitypes.h"
+#include "dbg.h"
 #include <math.h>
 #include <raylib.h>
 
@@ -12,16 +13,16 @@
 #define MAX_BULLETS     1000
 #define MAX_ASTEROIDS   1000
 #define MAX_BUF         100
+#define MAX_TEXTURES    1000
 #define FONT_SIZE       20
 #define FONT_LIVES_X    25
 #define FONT_LIVES_Y    20
 #define FONT_SCORE_X    775
 #define FONT_SCORE_Y    500
-#define DEG2RAD         (PI / 180.0f)
 
-// -------------------------------------------------------------------
+// ------------------------------------------------------------------
 // screen consts
-// -------------------------------------------------------------------
+// ------------------------------------------------------------------
 static const int screen_width = 900;
 static const int screen_height = 550;
 static const int fps_rate = 120;
@@ -29,18 +30,9 @@ static const char *window_title = "asteroids";
 
 static int lives = 3;                               // initial lives count
 static int score = 0;                               // initial score
+static int num_textures = 0;
 static const int bullet_damage = 5;
 const int asteroid_speed = 5;
-
-typedef struct Ship {
-    Vector2 position;
-    Vector2 velocity;                               // speed
-    float rotation;
-    int radius;
-    int sides;
-    int bullets[MAX_BULLETS];
-    Color colour;
-} Ship;
 
 typedef enum {
     SMALL=1,
@@ -55,6 +47,24 @@ typedef enum {
     DIAMOND
 } AsteroidType;
 
+typedef struct {
+    Image image;
+    Texture2D texture;
+    int screen_h;
+    int screen_w;
+    Color colour;
+} GameTexture;
+
+typedef struct Ship {
+    Vector2 position;
+    Vector2 velocity;                               // speed
+    float rotation;
+    int radius;
+    int sides;
+    int bullets[MAX_BULLETS];
+    Color colour;
+} Ship;
+
 typedef struct Asteroid {
     const char *name;
     Vector2 velocity;
@@ -68,21 +78,24 @@ typedef struct Asteroid {
 // local module signatures
 // -------------------------------------------------------------------
 static void update_game(Ship *ship);
-static void draw_game(Ship *ship);
-static void update_draw_game(Ship *ship);
+static void draw_game(Ship *ship, GameTexture *game_textures);
+static void update_draw_game(Ship *ship, GameTexture *game_textures);
 
 // object render functions
 void render_text(void);
 void render_ship(Ship *ship);
 void render_asteroids(Asteroid *asteroids);
 void render_game(Ship *ship);
-
 // collision functions
 void check_ship_asteroid_collision(void);
 void check_bullet_asteroid_collsion(void);
 void check_bullet_ship_collsion(void);
 void check_ship_screen_collision(void);
 void check_asteroid_screen_collision(void);
+void check_bullet_ship_collsion(void);
+void check_ship_screen_collision(void);
+// textures
+void load_textures(GameTexture *textures);
 
 void render_text() {
     const char *lives_text = "Lives: ";
@@ -108,16 +121,14 @@ void render_ship(Ship *my_ship) {
     DrawPoly(my_ship->position, my_ship->sides, my_ship->radius, my_ship->rotation, my_ship->colour);
 }
 
-void render_asteroids(Asteroid *asteroids) {
-    // TODO:
-}
+void render_asteroids(Asteroid *asteroids) { }
 
 void render_game(Ship *ship) {
     ClearBackground(BLACK);
 
-    render_text();
     render_ship(ship);
-    // render_asteroids();
+    render_text();
+    // TODO: render_asteroids();
 }
 
 void update_game(Ship *ship) {
@@ -149,21 +160,26 @@ void update_game(Ship *ship) {
     ship->position.y += ship->velocity.y;
 }
 
-void draw_game(Ship *ship) {
+void draw_game(Ship *ship, GameTexture *game_textures) {
 
     BeginDrawing();
-
+        for (int i = 0; i < num_textures; ++i) {
+            DrawTexture(game_textures[i].texture,
+                        game_textures[i].screen_w / 2,
+                        game_textures[i].screen_h / 2,
+                        game_textures[i].colour);
+        }
         render_game(ship);
 
     EndDrawing();
 
 }
 
-void update_draw_game(Ship *ship) {
+void update_draw_game(Ship *ship, GameTexture *game_textures) {
 
     // render a single frame
     update_game(ship);
-    draw_game(ship);
+    draw_game(ship, game_textures);
 
 }
 
@@ -186,6 +202,7 @@ Asteroid *init_asteroids(int max_asteroids) {
     Asteroid *asteroids = malloc(sizeof(Asteroid) * MAX_ASTEROIDS);
     if (asteroids == NULL) {
         fprintf(stderr, "error: memory alloc failed");
+        check_mem(asteroids);
         exit(1);
     }
 
@@ -202,6 +219,24 @@ Asteroid *init_asteroids(int max_asteroids) {
     }
 
     return asteroids;
+
+error:
+    fprintf(stderr, "error: memory alloc failed");
+    return asteroids;
+}
+
+// FIXME: initialising individually atm, needs to be dynamic/clean
+void load_textures(GameTexture *textures) {
+    // indiviudally create each texture and unload
+    Image space_ship = LoadImage("./assets/spaceship_normal.png");
+    Texture2D space_texture = LoadTextureFromImage(space_ship);
+    textures[0].texture = space_texture;
+    textures[0].image = space_ship;
+    textures[0].screen_h = screen_height;
+    textures[0].screen_w = screen_width;
+    textures[0].colour = WHITE;
+    UnloadImage(space_ship);
+    num_textures++;
 }
 
 // program entry point
@@ -215,9 +250,18 @@ int main(void) {
     Ship space_ship = init_ship(init_pos);
     Asteroid *asteroids = init_asteroids(MAX_ASTEROIDS);
 
+    // textures
+    GameTexture game_textures[MAX_TEXTURES];
+    load_textures(game_textures);
+
+    // main loop
     while (!WindowShouldClose()) {
-        // main game loop
-        update_draw_game(&space_ship);
+        update_draw_game(&space_ship, game_textures);
+    }
+
+    // unload textures
+    for (int i = 0; i < num_textures; ++i) {
+        UnloadTexture(game_textures[i].texture);
     }
 
     CloseWindow();
