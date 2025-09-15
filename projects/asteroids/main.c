@@ -32,7 +32,7 @@ static int lives = 3;                               // initial lives count
 static int score = 0;                               // initial score
 static int num_textures = 0;
 static const int bullet_damage = 5;
-const int asteroid_speed = 5;
+static const int asteroid_speed = 5;
 
 typedef enum {
     SMALL=1,
@@ -56,6 +56,7 @@ typedef struct {
 } GameTexture;
 
 typedef struct Ship {
+    GameTexture sprite;
     Vector2 position;
     Vector2 velocity;                               // speed
     float rotation;
@@ -67,6 +68,7 @@ typedef struct Ship {
 
 typedef struct Asteroid {
     const char *name;
+    GameTexture sprite;
     Vector2 velocity;
     float size;
     float rotation;
@@ -119,6 +121,10 @@ void render_text() {
 
 void render_ship(Ship *my_ship) {
     DrawPoly(my_ship->position, my_ship->sides, my_ship->radius, my_ship->rotation, my_ship->colour);
+    DrawTexture(my_ship->sprite.texture,
+                my_ship->position.x,
+                my_ship->position.y,
+                my_ship->sprite.colour);
 }
 
 void render_asteroids(Asteroid *asteroids) { }
@@ -169,6 +175,7 @@ void draw_game(Ship *ship, GameTexture *game_textures) {
                         game_textures[i].screen_h / 2,
                         game_textures[i].colour);
         }
+
         render_game(ship);
 
     EndDrawing();
@@ -194,6 +201,17 @@ Ship init_ship(Vector2 init_pos) {
     space_ship.rotation = 0;
     space_ship.colour = BLUE;
     space_ship.sides  = 3;
+
+    GameTexture ship_sprite;
+    //------------------------------------------------------------
+    Image ship_image = LoadImage("./assets/spaceship_normal.png");
+    Texture2D space_texture = LoadTextureFromImage(ship_image);
+    //------------------------------------------------------------
+    space_ship.sprite.image = ship_image;
+    space_ship.sprite.texture = space_texture;
+
+    UnloadImage(space_ship.sprite.image);
+    num_textures++;
 
     return space_ship;
 }
@@ -227,7 +245,8 @@ error:
 
 // FIXME: initialising individually atm, needs to be dynamic/clean
 void load_textures(GameTexture *textures) {
-    // indiviudally create each texture and unload
+
+    // space ship
     Image space_ship = LoadImage("./assets/spaceship_normal.png");
     Texture2D space_texture = LoadTextureFromImage(space_ship);
     textures[0].texture = space_texture;
@@ -237,6 +256,9 @@ void load_textures(GameTexture *textures) {
     textures[0].colour = WHITE;
     UnloadImage(space_ship);
     num_textures++;
+
+    // asteroid 1
+
 }
 
 // program entry point
