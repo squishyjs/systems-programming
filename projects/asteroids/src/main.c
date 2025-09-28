@@ -48,7 +48,7 @@ typedef enum {
 } AsteroidType;
 
 typedef struct {
-    Image image;
+   Image image;
     Texture2D texture;
     int screen_h;
     int screen_w;
@@ -111,8 +111,7 @@ void render_text() {
     char score_ctr[MAX_BUF];
     sprintf(score_ctr, "%d", score);
 
-    // TODO: render the mini ship icons as the "lives"
-    // TODO: create the icons
+    // TODO: render ship icon lives counter
     DrawText(lives_text, FONT_LIVES_X, FONT_LIVES_Y, FONT_SIZE, MAROON);
     DrawText(lives_ctr, FONT_LIVES_X + 66, FONT_LIVES_Y, FONT_SIZE, MAROON);
     DrawText(score_text, FONT_SCORE_X, FONT_SCORE_Y, FONT_SIZE, YELLOW);
@@ -120,6 +119,7 @@ void render_text() {
 }
 
 void render_ship(Ship *my_ship) {
+    // FIXME: change ship so it is rendered using vector lines
     DrawPoly(my_ship->position, my_ship->sides, my_ship->radius, my_ship->rotation, my_ship->colour);
     DrawTexture(my_ship->sprite.texture,
                 my_ship->position.x,
@@ -137,7 +137,7 @@ void render_game(Ship *ship) {
     // TODO: render_asteroids();
 }
 
-void update_game(Ship *ship) {
+static void update_game(Ship *ship) {
     if (IsKeyDown(KEY_A)) {
         ship->rotation -= 3.0f;
     }
@@ -166,7 +166,7 @@ void update_game(Ship *ship) {
     ship->position.y += ship->velocity.y;
 }
 
-void draw_game(Ship *ship, GameTexture *game_textures) {
+static void draw_game(Ship *ship, GameTexture *game_textures) {
 
     BeginDrawing();
         for (int i = 0; i < num_textures; ++i) {
@@ -182,7 +182,7 @@ void draw_game(Ship *ship, GameTexture *game_textures) {
 
 }
 
-void update_draw_game(Ship *ship, GameTexture *game_textures) {
+static void update_draw_game(Ship *ship, GameTexture *game_textures) {
 
     // render a single frame
     update_game(ship);
@@ -243,7 +243,7 @@ error:
     return asteroids;
 }
 
-// FIXME: initialising individually atm, needs to be dynamic/clean
+// WARNING: NOT NEEDED
 void load_textures(GameTexture *textures) {
 
     // space ship
@@ -274,7 +274,7 @@ int main(void) {
 
     // textures
     GameTexture game_textures[MAX_TEXTURES];
-    load_textures(game_textures);
+    // WARN: NOT NEEDED: load_textures(game_textures);
 
     // main loop
     while (!WindowShouldClose()) {
